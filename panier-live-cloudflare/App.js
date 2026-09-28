@@ -79,6 +79,19 @@ const CSS_TEXT = `
 .pl-scroll { scrollbar-width: thin; }
 
 .pl-court-divider { height: 1px; background: repeating-linear-gradient(90deg, var(--line) 0 8px, transparent 8px 14px); }
+
+.pl-sidebar-item { color: var(--muted); width: 100%; display: flex; align-items: center; gap: .75rem; padding: .65rem .8rem; border-radius: .7rem; font-size: .9rem; font-weight: 600; background: transparent; border: none; cursor: pointer; text-align: left; }
+.pl-sidebar-item:hover { background: var(--surface2); color: var(--chalk); }
+.pl-sidebar-item.active { background: var(--leather-dim); color: var(--leather); }
+
+.pl-content-pad { padding-bottom: 5.5rem; }
+@media (min-width: 768px) {
+  .pl-hide-desktop { display: none !important; }
+  .pl-content-pad { padding-bottom: 2.5rem; }
+}
+@media (max-width: 767px) {
+  .pl-hide-mobile { display: none !important; }
+}
 `;
 function GlobalStyle() {
     return React.createElement("style", null, CSS_TEXT);
@@ -560,7 +573,7 @@ function Header({ currentUser, onLogout }) {
                     React.createElement(LogOut, { size: 16 }))))));
 }
 function BottomNav({ active, onChange }) {
-    return (React.createElement("nav", { className: "fixed bottom-0 inset-x-0 z-20 pl-nav", style: { paddingBottom: 'env(safe-area-inset-bottom)' } },
+    return (React.createElement("nav", { className: "fixed bottom-0 inset-x-0 z-20 pl-nav pl-hide-desktop", style: { paddingBottom: 'env(safe-area-inset-bottom)' } },
         React.createElement("div", { className: "max-w-5xl mx-auto flex items-stretch justify-around" }, NAV_ITEMS.map(item => {
             const Icon = item.icon;
             const isActive = active === item.id;
@@ -568,6 +581,17 @@ function BottomNav({ active, onChange }) {
                 React.createElement(Icon, { size: 20, strokeWidth: isActive ? 2.4 : 2 }),
                 React.createElement("span", { className: "text-xs font-medium" }, item.label)));
         }))));
+}
+function Sidebar({ active, onChange }) {
+    return (React.createElement("aside", { className: "pl-hide-mobile", style: { width: '224px', flexShrink: 0 } },
+        React.createElement("div", { style: { position: 'sticky', top: '84px' } },
+            React.createElement("div", { className: "pl-card p-2", style: { display: 'flex', flexDirection: 'column', gap: '2px' } }, NAV_ITEMS.map(item => {
+                const Icon = item.icon;
+                const isActive = active === item.id;
+                return (React.createElement("button", { key: item.id, onClick: () => onChange(item.id), className: cls('pl-sidebar-item', isActive && 'active') },
+                    React.createElement(Icon, { size: 18, strokeWidth: isActive ? 2.4 : 2 }),
+                    item.label));
+            })))));
 }
 /* ============================== DASHBOARD ============================== */
 function DashboardTab({ currentUser, users, tournaments, sessions }) {
@@ -594,7 +618,7 @@ function DashboardTab({ currentUser, users, tournaments, sessions }) {
                 "Bonjour ",
                 currentUser.name.split(' ')[0]),
             React.createElement("h2", { className: "pl-display text-2xl mt-1" }, "Tableau de bord")),
-        React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-3" },
+        React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3" },
             React.createElement(StatCard, { label: "Matchs jou\u00E9s", value: my.played }),
             React.createElement(StatCard, { label: "Victoires", value: my.wins, color: "var(--teal)" }),
             React.createElement(StatCard, { label: "D\u00E9faites", value: my.losses, color: "var(--brick)" }),
@@ -631,7 +655,7 @@ function DashboardTab({ currentUser, users, tournaments, sessions }) {
                     row.wins,
                     "-",
                     row.losses)))))),
-        React.createElement("div", { className: "grid grid-cols-2 gap-3" },
+        React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3" },
             React.createElement("div", { className: "pl-card p-3 text-center" },
                 React.createElement("div", { className: "text-xs", style: { color: 'var(--muted)' } }, "\uD83C\uDFC0 Ballon assur\u00E9"),
                 React.createElement("div", { className: "pl-score text-xl mt-1" },
@@ -874,7 +898,7 @@ function TournamentDetail({ t, users, currentUser, onBack, onToggleJoin, onStart
             React.createElement("div", { className: "pl-eyebrow" },
                 React.createElement("span", { className: "pl-eyebrow-dot" }),
                 "\u00C9quipes"),
-            React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3" }, t.teams.map(team => (React.createElement("div", { key: team.id, className: "p-3 rounded-lg", style: { background: 'var(--surface2)' } },
+            React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-3" }, t.teams.map(team => (React.createElement("div", { key: team.id, className: "p-3 rounded-lg", style: { background: 'var(--surface2)' } },
                 React.createElement("div", { className: "font-semibold text-sm" }, team.name),
                 React.createElement("div", { className: "text-xs mt-1", style: { color: 'var(--muted)' } }, team.memberIds.map(id => { const u = users.find(x => x.id === id); return u ? u.name : '?'; }).join(' · ')))))),
             t.leftoverUserIds && t.leftoverUserIds.length > 0 && (React.createElement("div", { className: "text-xs mt-3", style: { color: 'var(--muted)' } },
@@ -1006,7 +1030,7 @@ function TournamentsTab({ currentUser, users, tournaments, setTournaments, selec
                     React.createElement(Plus, { size: 16 }),
                     " Cr\u00E9er")),
             React.createElement("div", { className: "flex gap-2 overflow-x-auto pl-scroll pb-1" }, [['tous', 'Tous'], ['inscription', 'Ouverts'], ['en_cours', 'En cours'], ['termine', 'Terminés']].map(([id, label]) => (React.createElement("button", { key: id, className: cls('pl-tab-chip', filter === id && 'active'), onClick: () => setFilter(id) }, label)))),
-            filtered.length === 0 ? (React.createElement(EmptyState, { icon: Trophy, title: "Aucun tournoi pour l'instant", subtitle: "Lancez-en un et invitez vos amis \u00E0 rejoindre." })) : (React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3" }, filtered.map(t => React.createElement(TournamentCard, { key: t.id, t: t, users: users, onClick: () => setSelectedTournamentId(t.id) }))))));
+            filtered.length === 0 ? (React.createElement(EmptyState, { icon: Trophy, title: "Aucun tournoi pour l'instant", subtitle: "Lancez-en un et invitez vos amis \u00E0 rejoindre." })) : (React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" }, filtered.map(t => React.createElement(TournamentCard, { key: t.id, t: t, users: users, onClick: () => setSelectedTournamentId(t.id) }))))));
     }
     return (React.createElement("div", null,
         body,
@@ -1164,32 +1188,33 @@ function CalendarTab({ currentUser, users, sessions, setSessions }) {
                 React.createElement("span", { className: "pl-eyebrow-dot" }),
                 "Planning"),
             React.createElement("h2", { className: "pl-display text-2xl mt-1" }, "Calendrier")),
-        React.createElement("div", { className: "pl-card p-4" },
-            React.createElement("div", { className: "flex items-center justify-between mb-3" },
-                React.createElement("button", { className: "pl-btn pl-btn-ghost p-2", onClick: () => setViewDate(d => new Date(d.getFullYear(), d.getMonth() - 1, 1)) },
-                    React.createElement(ChevronLeft, { size: 18 })),
-                React.createElement("div", { className: "font-semibold pl-display" }, fmtMonthYear(viewDate)),
-                React.createElement("button", { className: "pl-btn pl-btn-ghost p-2", onClick: () => setViewDate(d => new Date(d.getFullYear(), d.getMonth() + 1, 1)) },
-                    React.createElement(ChevronRight, { size: 18 }))),
-            React.createElement("div", { className: "grid grid-cols-7 gap-1 text-center text-xs mb-1", style: { color: 'var(--muted)' } }, WEEKDAYS_FR.map(w => React.createElement("div", { key: w }, w))),
-            React.createElement("div", { className: "grid grid-cols-7 gap-1" }, cells.map((d, i) => {
-                if (!d)
-                    return React.createElement("div", { key: i });
-                const key = toDateKey(d);
-                const isSelected = key === selectedDateKey;
-                const isToday = key === todayKey();
-                const count = (sessionsByDate[key] || []).length;
-                return (React.createElement("button", { key: i, onClick: () => setSelectedDateKey(key), className: "aspect-square rounded-lg flex flex-col items-center justify-center text-sm relative", style: { background: isSelected ? 'var(--leather-dim)' : 'transparent', border: isToday ? '1px solid var(--amber)' : '1px solid transparent', color: isSelected ? 'var(--leather)' : 'var(--chalk)', fontWeight: isSelected ? 700 : 500 } },
-                    d.getDate(),
-                    count > 0 && React.createElement("span", { style: { position: 'absolute', bottom: '4px', width: '4px', height: '4px', borderRadius: '999px', background: isSelected ? 'var(--leather)' : 'var(--amber)' } })));
-            }))),
-        React.createElement("div", null,
-            React.createElement("div", { className: "flex items-center justify-between mb-3 flex-wrap gap-2" },
-                React.createElement("div", { className: "font-semibold" }, fmtDateLong(selectedDateKey)),
-                React.createElement("button", { className: "pl-btn pl-btn-primary px-3.5 py-2 text-sm", style: { display: 'flex', alignItems: 'center', gap: '6px' }, onClick: () => setShowCreate(true) },
-                    React.createElement(Plus, { size: 15 }),
-                    " Proposer")),
-            daySessions.length === 0 ? (React.createElement(EmptyState, { icon: CalendarIcon, title: "Aucune session ce jour", subtitle: "Soyez le premier \u00E0 en proposer une." })) : (React.createElement("div", { className: "space-y-3" }, daySessions.map(s => (React.createElement(SessionCard, { key: s.id, s: s, users: users, currentUser: currentUser, onToggleJoin: () => toggleJoin(s), onToggleBallon: () => toggleBallon(s), onDelete: () => handleDelete(s) })))))),
+        React.createElement("div", { className: "md:flex md:gap-5 md:items-start" },
+            React.createElement("div", { className: "pl-card p-4 md:w-96 md:flex-shrink-0" },
+                React.createElement("div", { className: "flex items-center justify-between mb-3" },
+                    React.createElement("button", { className: "pl-btn pl-btn-ghost p-2", onClick: () => setViewDate(d => new Date(d.getFullYear(), d.getMonth() - 1, 1)) },
+                        React.createElement(ChevronLeft, { size: 18 })),
+                    React.createElement("div", { className: "font-semibold pl-display" }, fmtMonthYear(viewDate)),
+                    React.createElement("button", { className: "pl-btn pl-btn-ghost p-2", onClick: () => setViewDate(d => new Date(d.getFullYear(), d.getMonth() + 1, 1)) },
+                        React.createElement(ChevronRight, { size: 18 }))),
+                React.createElement("div", { className: "grid grid-cols-7 gap-1 text-center text-xs mb-1", style: { color: 'var(--muted)' } }, WEEKDAYS_FR.map(w => React.createElement("div", { key: w }, w))),
+                React.createElement("div", { className: "grid grid-cols-7 gap-1" }, cells.map((d, i) => {
+                    if (!d)
+                        return React.createElement("div", { key: i });
+                    const key = toDateKey(d);
+                    const isSelected = key === selectedDateKey;
+                    const isToday = key === todayKey();
+                    const count = (sessionsByDate[key] || []).length;
+                    return (React.createElement("button", { key: i, onClick: () => setSelectedDateKey(key), className: "aspect-square rounded-lg flex flex-col items-center justify-center text-sm relative", style: { background: isSelected ? 'var(--leather-dim)' : 'transparent', border: isToday ? '1px solid var(--amber)' : '1px solid transparent', color: isSelected ? 'var(--leather)' : 'var(--chalk)', fontWeight: isSelected ? 700 : 500 } },
+                        d.getDate(),
+                        count > 0 && React.createElement("span", { style: { position: 'absolute', bottom: '4px', width: '4px', height: '4px', borderRadius: '999px', background: isSelected ? 'var(--leather)' : 'var(--amber)' } })));
+                }))),
+            React.createElement("div", { className: "mt-5 md:mt-0 flex-1 min-w-0" },
+                React.createElement("div", { className: "flex items-center justify-between mb-3 flex-wrap gap-2" },
+                    React.createElement("div", { className: "font-semibold" }, fmtDateLong(selectedDateKey)),
+                    React.createElement("button", { className: "pl-btn pl-btn-primary px-3.5 py-2 text-sm", style: { display: 'flex', alignItems: 'center', gap: '6px' }, onClick: () => setShowCreate(true) },
+                        React.createElement(Plus, { size: 15 }),
+                        " Proposer")),
+                daySessions.length === 0 ? (React.createElement(EmptyState, { icon: CalendarIcon, title: "Aucune session ce jour", subtitle: "Soyez le premier \u00E0 en proposer une." })) : (React.createElement("div", { className: "space-y-3" }, daySessions.map(s => (React.createElement(SessionCard, { key: s.id, s: s, users: users, currentUser: currentUser, onToggleJoin: () => toggleJoin(s), onToggleBallon: () => toggleBallon(s), onDelete: () => handleDelete(s) }))))))),
         showCreate && React.createElement(CreateSessionModal, { defaultDate: selectedDateKey, onClose: () => setShowCreate(false), onCreate: handleCreate })));
 }
 /* ============================== MESSAGES ============================== */
@@ -1272,23 +1297,25 @@ function MessagesTab({ currentUser, users, messages, setMessages }) {
         setSelectedId(id);
         setLastOpenedAt(prev => ({ ...prev, [id]: Date.now() }));
     }
-    if (selectedId) {
-        const conv = conversations.find(c => c.id === selectedId);
-        return (React.createElement(ChatView, { conversationId: selectedId, title: conv ? conv.title : '', otherUser: conv ? conv.otherUser : null, users: users, currentUser: currentUser, messages: messages, onSend: (text) => handleSend(selectedId, text), onBack: () => setSelectedId(null) }));
-    }
-    return (React.createElement("div", { className: "space-y-4 pl-fadein" },
-        React.createElement("div", null,
-            React.createElement("div", { className: "pl-eyebrow" },
-                React.createElement("span", { className: "pl-eyebrow-dot" }),
-                "Discussions"),
-            React.createElement("h2", { className: "pl-display text-2xl mt-1" }, "Messages")),
-        React.createElement("div", { className: "space-y-2" }, conversations.map(c => (React.createElement("button", { key: c.id, onClick: () => openConversation(c.id), className: "pl-card pl-card-hover p-3 w-full text-left", style: { display: 'flex', alignItems: 'center', gap: '12px' } },
-            c.otherUser ? React.createElement(Avatar, { user: c.otherUser, size: "sm" }) : React.createElement("div", { className: "pl-avatar", style: { width: 32, height: 32, background: 'var(--leather)' } },
-                React.createElement(Users, { size: 16, color: "#1A0E06" })),
-            React.createElement("div", { className: "flex-1 min-w-0" },
-                React.createElement("div", { className: "text-sm font-semibold truncate" }, c.title),
-                React.createElement("div", { className: "text-xs truncate", style: { color: 'var(--muted)' } }, c.last ? c.last.text : 'Aucun message')),
-            c.unread && React.createElement("span", { className: "pl-live-dot", style: { background: 'var(--leather)' } })))))));
+    const conv = conversations.find(c => c.id === selectedId) || null;
+    return (React.createElement("div", { className: "pl-fadein md:flex md:gap-4", style: { minHeight: 'calc(100vh - 220px)' } },
+        React.createElement("div", { className: cls('space-y-4 md:w-80 md:flex-shrink-0', selectedId && 'pl-hide-mobile') },
+            React.createElement("div", null,
+                React.createElement("div", { className: "pl-eyebrow" },
+                    React.createElement("span", { className: "pl-eyebrow-dot" }),
+                    "Discussions"),
+                React.createElement("h2", { className: "pl-display text-2xl mt-1" }, "Messages")),
+            React.createElement("div", { className: "space-y-2" }, conversations.map(c => (React.createElement("button", { key: c.id, onClick: () => openConversation(c.id), className: "pl-card pl-card-hover p-3 w-full text-left", style: { display: 'flex', alignItems: 'center', gap: '12px', borderColor: selectedId === c.id ? 'var(--leather)' : undefined } },
+                c.otherUser ? React.createElement(Avatar, { user: c.otherUser, size: "sm" }) : React.createElement("div", { className: "pl-avatar", style: { width: 32, height: 32, background: 'var(--leather)' } },
+                    React.createElement(Users, { size: 16, color: "#1A0E06" })),
+                React.createElement("div", { className: "flex-1 min-w-0" },
+                    React.createElement("div", { className: "text-sm font-semibold truncate" }, c.title),
+                    React.createElement("div", { className: "text-xs truncate", style: { color: 'var(--muted)' } }, c.last ? c.last.text : 'Aucun message')),
+                c.unread && React.createElement("span", { className: "pl-live-dot", style: { background: 'var(--leather)' } })))))),
+        React.createElement("div", { className: cls('flex-1 mt-4 md:mt-0', !selectedId && 'pl-hide-mobile') }, selectedId ? (React.createElement(ChatView, { conversationId: selectedId, title: conv ? conv.title : '', otherUser: conv ? conv.otherUser : null, users: users, currentUser: currentUser, messages: messages, onSend: (text) => handleSend(selectedId, text), onBack: () => setSelectedId(null) })) : (React.createElement("div", { className: "pl-card p-8 text-center", style: { height: '100%', minHeight: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
+            React.createElement(MessageCircle, { size: 28, style: { color: 'var(--muted)' } }),
+            React.createElement("div", { className: "font-semibold mt-3" }, "Choisis une discussion"),
+            React.createElement("div", { className: "text-sm mt-1", style: { color: 'var(--muted)' } }, "S\u00E9lectionne \"G\u00E9n\u00E9ral\" ou un joueur dans la liste."))))));
 }
 /* ============================== PROFILE ============================== */
 function ProfilTab({ currentUser, users, tournaments, sessions, onSelectTournament, onLogout }) {
@@ -1385,12 +1412,15 @@ export default function App() {
     else {
         content = (React.createElement(React.Fragment, null,
             React.createElement(Header, { currentUser: currentUser, onLogout: handleLogout }),
-            React.createElement("main", { className: "max-w-5xl mx-auto px-4 py-5", style: { paddingBottom: '5.5rem' } },
-                activeTab === 'dashboard' && React.createElement(DashboardTab, { currentUser: currentUser, users: users, tournaments: tournaments, sessions: sessions }),
-                activeTab === 'tournois' && (React.createElement(TournamentsTab, { currentUser: currentUser, users: users, tournaments: tournaments, setTournaments: setTournaments, selectedTournamentId: selectedTournamentId, setSelectedTournamentId: setSelectedTournamentId })),
-                activeTab === 'messages' && React.createElement(MessagesTab, { currentUser: currentUser, users: users, messages: messages, setMessages: setMessages }),
-                activeTab === 'calendrier' && React.createElement(CalendarTab, { currentUser: currentUser, users: users, sessions: sessions, setSessions: setSessions }),
-                activeTab === 'profil' && (React.createElement(ProfilTab, { currentUser: currentUser, users: users, tournaments: tournaments, sessions: sessions, onSelectTournament: (id) => { setSelectedTournamentId(id); setActiveTab('tournois'); }, onLogout: handleLogout }))),
+            React.createElement("div", { className: "max-w-6xl mx-auto md:flex md:items-start md:gap-6 md:px-4 md:pt-5" },
+                React.createElement(Sidebar, { active: activeTab, onChange: (tab) => { setActiveTab(tab); if (tab !== 'tournois')
+                        setSelectedTournamentId(null); } }),
+                React.createElement("main", { className: "pl-content-pad px-4 py-5 md:px-0 md:py-0", style: { flex: 1, minWidth: 0 } },
+                    activeTab === 'dashboard' && React.createElement(DashboardTab, { currentUser: currentUser, users: users, tournaments: tournaments, sessions: sessions }),
+                    activeTab === 'tournois' && (React.createElement(TournamentsTab, { currentUser: currentUser, users: users, tournaments: tournaments, setTournaments: setTournaments, selectedTournamentId: selectedTournamentId, setSelectedTournamentId: setSelectedTournamentId })),
+                    activeTab === 'messages' && React.createElement(MessagesTab, { currentUser: currentUser, users: users, messages: messages, setMessages: setMessages }),
+                    activeTab === 'calendrier' && React.createElement(CalendarTab, { currentUser: currentUser, users: users, sessions: sessions, setSessions: setSessions }),
+                    activeTab === 'profil' && (React.createElement(ProfilTab, { currentUser: currentUser, users: users, tournaments: tournaments, sessions: sessions, onSelectTournament: (id) => { setSelectedTournamentId(id); setActiveTab('tournois'); }, onLogout: handleLogout })))),
             React.createElement(BottomNav, { active: activeTab, onChange: (tab) => { setActiveTab(tab); if (tab !== 'tournois')
                     setSelectedTournamentId(null); } })));
     }
