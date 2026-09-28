@@ -1,0 +1,13 @@
+name = "panier-live"
+compatibility_date = "2024-09-01"
+pages_build_output_dir = "."
+
+# After creating a KV namespace (dashboard: Workers & Pages -> KV -> Create
+# namespace, or `wrangler kv namespace create PANIER_KV`), put its id below.
+# This file only matters if you deploy with the wrangler CLI — if you deploy
+# by connecting the GitHub repo in the dashboard instead, add the same
+# binding there: Pages project -> Settings -> Functions -> KV namespace
+# bindings -> variable name "PANIER_KV".
+[[kv_namespaces]]
+binding = "PANIER_KV"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
